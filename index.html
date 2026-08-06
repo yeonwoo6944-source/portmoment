@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>PortMoment</title><link rel="preconnect" href="https://images.unsplash.com"><link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header><a class="brand" href="#top">Port<span>Moment</span></a><button class="lang" id="langBtn" aria-label="언어 설정">◎ <span id="langLabel">한국어</span></button></header>
+    <div class="lang-sheet" id="langSheet" hidden><div class="sheet-head"><b id="langTitle">언어 설정</b><button id="closeLang">×</button></div><div id="languageList"></div></div>
+    <section class="hero" id="top"><p class="eyebrow">BUSAN PORT • YOUR TIME, BEAUTIFULLY SPENT</p><h1 id="heroTitle">항구에서의 짧은 하루,<br><em>부산을 깊게.</em></h1><p class="intro" id="heroText">입출항 시간과 현재 위치를 바탕으로 당신만의 부산 여행을 만들어요.</p><div class="harbor"><div class="sun"></div><div class="ship">⚓</div><div class="wave w1"></div><div class="wave w2"></div></div></section>
+    <section class="panel itinerary-panel"><div class="section-label"><span>01</span><b id="portStay">항구 체류 시간</b></div><p id="portHint">입항·출항 시간을 입력해 주세요.</p><div class="time-row"><label><span id="arrivalLabel">입항</span><input type="time" id="arrival" value="09:00"></label><div class="route-line">→</div><label><span id="departureLabel">출항</span><input type="time" id="departure" value="18:00"></label></div><div class="available"><span class="dot"></span><b id="available">9시간 이용 가능</b><span id="locationStatus">부산항 기준</span></div><button class="gps" id="gpsBtn"><span>⌖</span><span id="gpsText">현재 위치 사용하기</span></button></section>
+    <section class="explore"><div class="section-title"><div><p class="eyebrow" id="exploreEyebrow">CURATED FOR YOUR MOMENT</p><h2 id="exploreTitle">어디로 떠나볼까요?</h2></div><span class="compass">✦</span></div><div class="chips" id="chips"></div><div class="recommend-card" id="recommendCard"></div></section>
+    <section class="photo-section"><div class="photo-image"></div><div class="photo-content"><p class="eyebrow">PHOTO COMPASS</p><h2 id="photoTitle">지금, 어느 쪽을<br>향해 찍을까요?</h2><p id="photoDesc">현재 시간과 위치를 분석해 가장 아름다운 빛의 방향을 알려드려요.</p><button class="light-btn" id="photoBtn"><span>✦</span><span id="photoBtnText">사진 스팟 찾기</span><span>→</span></button></div></section>
+    <footer><span>PORTMOMENT</span><span>BUSAN, KOREA</span></footer>
+  </main>
+  <div class="modal" id="modal" hidden><div class="modal-card"><button class="modal-close" id="modalClose">×</button><p class="eyebrow" id="modalEyebrow">AI RECOMMENDATION</p><h2 id="modalTitle"></h2><div id="modalBody"></div></div></div>
+  <script src="app.js"></script>
+</body></html>

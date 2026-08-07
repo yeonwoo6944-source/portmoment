@@ -1,29 +1,115 @@
-/* Consensus-based live discovery for independent custom categories. */
+/* AI-powered custom category search. Other planning behavior remains in app.js. */
 window.addEventListener('load', () => setTimeout(() => {
   document.querySelector('.time-mode-chips')?.remove();
   const button = $('#analyzeCustom'), input = $('#customCategory'), output = $('#customResult');
   if (!button || !input || !output) return;
+
   const copy = {
-    ko:{bad:'제대로 입력해 주십시오.',search:'입력한 표현에 “관련 장소”를 더해 여러 검색 결과를 분석하고 있습니다…',none:'부산에서 관련된 실제 장소를 찾지 못했습니다. 원하는 경험이나 활동을 조금 더 구체적으로 입력해 주세요.',found:'검색 결과의 공통점을 바탕으로 찾은 부산의 장소:',common:'공통 주제'},
-    en:{bad:'Please enter it correctly.',search:'Adding “related places” to your request and analyzing multiple search results…',none:'No related real place was found in Busan. Please describe the experience or activity more specifically.',found:'Places in Busan found from common search-result themes:',common:'Common themes'},
-    ja:{bad:'正しく入力してください。',search:'入力内容に「関連場所」を加え、複数の検索結果を分析しています…',none:'釜山で関連する実在の場所が見つかりませんでした。希望する体験や活動をもう少し具体的に入力してください。',found:'検索結果の共通点を基に見つけた釜山の場所：',common:'共通テーマ'},
-    zhTW:{bad:'請正確輸入。',search:'正在將「相關地點」加入輸入內容並分析多個搜尋結果…',none:'在釜山找不到相關的實際地點。請更具體地輸入想要的體驗或活動。',found:'根據搜尋結果的共同點找到的釜山地點：',common:'共同主題'},
-    zhCN:{bad:'请正确输入。',search:'正在将“相关地点”加入输入内容并分析多个搜索结果…',none:'在釜山找不到相关的实际地点。请更具体地输入想要的体验或活动。',found:'根据搜索结果的共同点找到的釜山地点：',common:'共同主题'},
-    fr:{bad:'Veuillez saisir correctement votre demande.',search:'Ajout de « lieux associés » à votre demande et analyse de plusieurs résultats…',none:'Aucun lieu réel associé n’a été trouvé à Busan. Décrivez plus précisément l’expérience ou l’activité souhaitée.',found:'Lieux de Busan trouvés à partir des points communs des résultats :',common:'Thèmes communs'},
-    de:{bad:'Bitte geben Sie Ihre Anfrage korrekt ein.',search:'„Verwandte Orte“ wird ergänzt und mehrere Suchergebnisse werden analysiert…',none:'In Busan wurde kein passender realer Ort gefunden. Beschreiben Sie das gewünschte Erlebnis oder die Aktivität genauer.',found:'Orte in Busan anhand gemeinsamer Suchthemen:',common:'Gemeinsame Themen'},
-    es:{bad:'Introduzca correctamente su solicitud.',search:'Añadiendo «lugares relacionados» y analizando varios resultados…',none:'No se encontró ningún lugar real relacionado en Busan. Describa con más detalle la experiencia o actividad deseada.',found:'Lugares de Busan encontrados a partir de coincidencias entre resultados:',common:'Temas comunes'}
+    ko:{bad:'제대로 입력해 주십시오.',search:'입력 내용을 이해하기 위해 무료 인터넷 검색 결과를 분석하고 있습니다…',none:'부산의 관련 장소를 찾지 못했습니다. 원하는 경험이나 활동을 조금 더 구체적으로 입력해 주세요.',found:'여러 검색 결과에서 반복되는 주제를 분석해 찾은 부산의 장소:',theme:'주요 주제',offline:'검색 서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.'},
+    en:{bad:'Please enter it correctly.',search:'Analyzing free internet search results to understand your input…',none:'No related place was found in Busan. Please describe the experience or activity more specifically.',found:'Places in Busan selected from recurring themes across multiple search results:',theme:'Main themes',offline:'Could not connect to the search server. Please try again shortly.'},
+    ja:{bad:'正しく入力してください。',search:'入力内容を理解するため、無料のインターネット検索結果を分析しています…',none:'釜山で関連する場所が見つかりませんでした。希望する体験や活動をもう少し具体的に入力してください。',found:'複数の検索結果で繰り返されるテーマから選んだ釜山の場所：',theme:'主要テーマ',offline:'検索サーバーに接続できませんでした。しばらくしてからもう一度お試しください。'},
+    zhTW:{bad:'請正確輸入。',search:'正在分析免費網路搜尋結果以理解輸入內容…',none:'在釜山找不到相關地點。請更具體地輸入想要的體驗或活動。',found:'根據多個搜尋結果中反覆出現的主題選出的釜山地點：',theme:'主要主題',offline:'無法連接搜尋伺服器，請稍後再試。'},
+    zhCN:{bad:'请正确输入。',search:'正在分析免费互联网搜索结果以理解输入内容…',none:'在釜山找不到相关地点。请更具体地输入想要的体验或活动。',found:'根据多个搜索结果中反复出现的主题选出的釜山地点：',theme:'主要主题',offline:'无法连接搜索服务器，请稍后再试。'},
+    fr:{bad:'Veuillez saisir correctement votre demande.',search:'Analyse de résultats de recherche Internet gratuits pour comprendre votre saisie…',none:'Aucun lieu associé n’a été trouvé à Busan. Décrivez plus précisément l’expérience ou l’activité souhaitée.',found:'Lieux de Busan sélectionnés selon les thèmes récurrents de plusieurs résultats :',theme:'Thèmes principaux',offline:'Impossible de joindre le serveur de recherche. Réessayez dans un instant.'},
+    de:{bad:'Bitte geben Sie Ihre Anfrage korrekt ein.',search:'Kostenlose Internetsuchergebnisse werden analysiert, um Ihre Eingabe zu verstehen…',none:'In Busan wurde kein passender Ort gefunden. Beschreiben Sie das gewünschte Erlebnis oder die Aktivität genauer.',found:'Orte in Busan nach wiederkehrenden Themen mehrerer Suchergebnisse:',theme:'Hauptthemen',offline:'Der Suchserver ist nicht erreichbar. Bitte versuchen Sie es gleich noch einmal.'},
+    es:{bad:'Introduzca correctamente su solicitud.',search:'Analizando resultados gratuitos de Internet para comprender la entrada…',none:'No se encontró un lugar relacionado en Busan. Describa con más detalle la experiencia o actividad deseada.',found:'Lugares de Busan elegidos según temas recurrentes de varios resultados:',theme:'Temas principales',offline:'No se pudo conectar con el servidor de búsqueda. Inténtelo de nuevo en unos instantes.'}
   };
-  const related={ko:'관련 장소',en:'related places',ja:'関連場所',zhTW:'相關地點',zhCN:'相关地点',fr:'lieux associés',de:'verwandte Orte',es:'lugares relacionados'};
-  const typeNames={aquarium:'아쿠아리움 해양 체험',museum:'박물관 전시',gallery:'미술관 전시',arts_centre:'문화 예술 체험',theatre:'공연 문화',cinema:'영화 문화',park:'공원 자연',garden:'정원 자연',viewpoint:'전망 명소',attraction:'관광 체험',theme_park:'테마파크 체험',zoo:'동물 체험',sports_centre:'스포츠 체험',stadium:'스포츠 경기',swimming_pool:'수영 체험',beach:'해변 바다',restaurant:'음식점 맛집',cafe:'카페',marketplace:'시장 쇼핑',place_of_worship:'사찰 종교 문화',historic:'역사 유적',memorial:'역사 기념관',library:'도서관 독서',books:'서점 독서',craft:'공예 만들기',spa:'스파 휴식'};
-  const stop=new Set('부산 대한민국 한국 관련 장소 명소 관광 체험 busan korea south related places place tourist attraction 부산광역시 구 군 동 로 길'.split(' '));
-  const message=()=>copy[lang]||copy.en;
-  const normalize=value=>value.toLocaleLowerCase().replace(/[\p{P}\p{S}]/gu,' ').replace(/\s+/g,' ').trim();
-  const invalid=value=>{const v=value.trim();if(v.length<2||v.length>60||/[;{}<>\\|^~`]/.test(v)||/(.)\1{4,}/u.test(v))return true;const letters=(v.match(/[\p{L}\p{N}]/gu)||[]).length,jamo=(v.match(/[ㄱ-ㅎㅏ-ㅣ]/g)||[]).length;return letters/Math.max(v.length,1)<.65||jamo>Math.max(2,letters*.35)};
-  const redraw=()=>{const box=$('#customCategoryChips');if(!box)return;box.innerHTML=pmCustomCategories.map((category,index)=>`<button class="active" data-i="${index}">${category.query} ×</button>`).join('');box.querySelectorAll('button').forEach(node=>node.onclick=()=>{pmCustomCategories.splice(+node.dataset.i,1);redraw()})};
-  async function osmSearch(query,limit=14){const params=new URLSearchParams({format:'jsonv2',limit:String(limit),namedetails:'1',addressdetails:'1',extratags:'1','accept-language':lang,q:`${query}, 부산, 대한민국`});const response=await fetch(`https://nominatim.openstreetmap.org/search?${params}`,{headers:{Accept:'application/json'}});if(!response.ok)return[];return(await response.json()).filter(item=>+item.lat>34.8&&+item.lat<35.5&&+item.lon>128.7&&+item.lon<129.4).map(item=>({name:(item.namedetails?.name||item.display_name.split(',')[0]).trim(),score:Math.round((+item.importance||.35)*100),opening:item.extratags?.opening_hours||null,category:item.category||'',type:item.type||'',display:item.display_name||'',source:'map'}))}
-  async function wikiSearch(query){const params=new URLSearchParams({origin:'*',action:'query',format:'json',generator:'search',gsrnamespace:'0',gsrlimit:'10',gsrsearch:`부산 ${query}`,prop:'coordinates|description'});const response=await fetch(`https://ko.wikipedia.org/w/api.php?${params}`);if(!response.ok)return[];const pages=Object.values((await response.json()).query?.pages||{});return pages.filter(page=>page.coordinates?.some(c=>c.lat>34.8&&c.lat<35.5&&c.lon>128.7&&c.lon<129.4)).map(page=>({name:page.title,score:82,category:'wikipedia',type:'',display:page.description||'',source:'wiki'}))}
-  function inferThemes(results,raw){const counts=new Map(),add=(term,weight=1)=>{const key=normalize(term);if(!key||key.length<2||stop.has(key))return;counts.set(key,(counts.get(key)||0)+weight)};results.forEach(item=>{const perResult=new Set();[item.category,item.type,typeNames[item.type]].filter(Boolean).forEach(term=>perResult.add(term));normalize(`${item.name} ${item.display}`).split(' ').filter(term=>term.length>1&&!stop.has(term)).slice(0,14).forEach(term=>perResult.add(term));perResult.forEach(term=>add(term,typeNames[item.type]===term?3:1))});normalize(raw).split(' ').forEach(term=>add(term,2));return[...counts].sort((a,b)=>b[1]-a[1]).filter(([,count])=>count>=2).slice(0,4).map(([term])=>typeNames[term]||term)}
-  function rankPlaces(results,themes,raw){const needles=normalize(`${raw} ${themes.join(' ')}`).split(' ').filter(x=>x.length>1),seen=new Set(),generic=new Set(['부산','부산광역시','busan','busan metropolitan city']);return results.filter(item=>!generic.has(normalize(item.name))&&!['boundary','administrative'].includes(item.category)&&item.type!=='administrative').map(item=>{const haystack=normalize(`${item.name} ${item.display} ${item.category} ${item.type} ${typeNames[item.type]||''}`),matches=needles.filter(term=>haystack.includes(term)).length;return{...item,rank:item.score+matches*14+(item.opening?5:0)+(item.source==='map'?3:0)}}).sort((a,b)=>b.rank-a.rank).filter(item=>{const key=normalize(item.name);if(!key||seen.has(key))return false;seen.add(key);return true})}
-  async function analyze(){const raw=input.value.trim();if(invalid(raw)){output.textContent=message().bad;return}output.textContent=message().search;try{const suffix=related[lang]||related.en,seedQuery=`${raw} ${suffix}`,[seedMap,seedWiki]=await Promise.all([osmSearch(seedQuery),wikiSearch(seedQuery)]),seeds=[...seedMap,...seedWiki],themes=inferThemes(seeds,raw),consensus=themes.length?themes.join(' '):raw,[refinedMap,refinedWiki]=await Promise.all([osmSearch(`${raw} ${consensus}`),wikiSearch(`${raw} ${consensus}`)]);let found=rankPlaces([...refinedMap,...refinedWiki,...seeds],themes,raw).slice(0,6);if(!found.length)found=rankPlaces(await osmSearch(raw),themes,raw).slice(0,6);if(!found.length){output.textContent=message().none;return}const candidates=found.map((item,index)=>[item.name,20+index*6,80,Math.max(70,item.rank),item.opening||null]),existing=pmCustomCategories.findIndex(category=>normalize(category.query)===normalize(raw)),category={id:`live-${Date.now()}`,query:raw,searchQuery:seedQuery,commonThemes:themes,candidates};if(existing>=0)pmCustomCategories.splice(existing,1,category);else pmCustomCategories.push(category);const themeText=themes.length?` ${message().common}: ${themes.join(', ')}.`:'';output.textContent=`${message().found}${themeText} ${found.map(item=>item.name+(item.opening?` (${item.opening})`:'')).join(', ')}`;input.value='';redraw()}catch(error){output.textContent=message().none}}
-  button.onclick=analyze;input.onkeydown=event=>{if(event.key==='Enter')analyze()};
-},2200));
+  const message = () => copy[lang] || copy.en;
+  const normalize = value => value.toLocaleLowerCase().normalize('NFKC').replace(/[\p{P}\p{S}\s]/gu, '');
+  const invalid = value => {
+    const v = value.trim();
+    if (v.length < 2 || v.length > 80 || /[;{}<>\\|^~`]/.test(v) || /(.)\1{4,}/u.test(v)) return true;
+    const letters = (v.match(/[\p{L}\p{N}]/gu) || []).length;
+    const jamo = (v.match(/[ㄱ-ㅎㅏ-ㅣ]/g) || []).length;
+    return letters / Math.max(v.length, 1) < .65 || jamo > Math.max(2, letters * .35);
+  };
+  const redraw = () => {
+    const box = $('#customCategoryChips');
+    if (!box) return;
+    box.innerHTML = pmCustomCategories.map((category, index) => `<button class="active" data-i="${index}">${category.query} ×</button>`).join('');
+    box.querySelectorAll('button').forEach(node => node.onclick = () => { pmCustomCategories.splice(+node.dataset.i, 1); redraw(); });
+  };
+  const endpoint = location.hostname.endsWith('github.io')
+    ? 'https://portmoment.vercel.app/api/custom-search'
+    : '/api/custom-search';
+  const clearPlaceTypes = [
+    {pattern:/수영장|실내수영|swimming\s*pool|piscine|schwimmbad|piscina|プール|游泳池|泳池/i,label:'수영장',term:'swimming pool',stay:100},
+    {pattern:/아쿠아리움|수족관|aquarium|水族館|水族馆/i,label:'아쿠아리움',term:'aquarium',stay:90},
+    {pattern:/박물관|museum|musée|museo|博物館|博物馆/i,label:'박물관',term:'museum',stay:90},
+    {pattern:/미술관|art\s*gallery|gallery|galerie|galería|美術館|美术馆/i,label:'미술관',term:'art gallery',stay:90},
+    {pattern:/도서관|library|bibliothèque|bibliothek|biblioteca|図書館|图书馆/i,label:'도서관',term:'library',stay:80},
+    {pattern:/동물원|zoo|動物園|动物园/i,label:'동물원',term:'zoo',stay:120},
+    {pattern:/영화관|cinema|movie\s*theater|kino|cine|映画館|电影院/i,label:'영화관',term:'cinema',stay:140},
+    {pattern:/해수욕장|해변|beach|plage|strand|playa|海水浴場|海滩/i,label:'해수욕장',term:'beach',stay:100}
+  ];
+
+  async function findClearPlace(type) {
+    const params = new URLSearchParams({format:'jsonv2',limit:'12',namedetails:'1',addressdetails:'1',extratags:'1','accept-language':lang,q:`${type.term} Busan`});
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {headers:{Accept:'application/json'}});
+    if (!response.ok) return [];
+    return (await response.json()).filter(item => +item.lat > 34.8 && +item.lat < 35.5 && +item.lon > 128.7 && +item.lon < 129.4).map((item,index) => ({
+      name:(item.namedetails?.name || item.display_name.split(',')[0]).trim(),
+      openingHours:item.extratags?.opening_hours || null,
+      estimatedTravelMinutes:20 + index * 6,
+      recommendedStayMinutes:type.stay,
+      confidence:95
+    }));
+  }
+
+  async function analyze() {
+    const raw = input.value.trim();
+    if (invalid(raw)) { output.textContent = message().bad; return; }
+    output.textContent = message().search;
+    button.disabled = true;
+    try {
+      const clearType = clearPlaceTypes.find(type => type.pattern.test(raw));
+      if (clearType) {
+        const places = await findClearPlace(clearType);
+        if (!places.length) { output.textContent = message().none; return; }
+        const candidates = places.map(place => [place.name,place.estimatedTravelMinutes,place.recommendedStayMinutes,place.confidence,place.openingHours]);
+        const existing = pmCustomCategories.findIndex(category => normalize(category.query) === normalize(raw));
+        const category = {id:`direct-${Date.now()}`,query:raw,understoodAs:clearType.label,commonThemes:[clearType.label],candidates};
+        if (existing >= 0) pmCustomCategories.splice(existing,1,category); else pmCustomCategories.push(category);
+        output.textContent = `${message().found} ${message().theme}: ${clearType.label}. ${places.map(place => place.name + (place.openingHours ? ` (${place.openingHours})` : '')).join(', ')}`;
+        input.value = ''; redraw(); return;
+      }
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: raw, language: lang })
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        output.textContent = result.error === 'invalid_query' ? message().bad : result.error === 'no_places' ? message().none : message().offline;
+        return;
+      }
+      if (!result.places?.length) { output.textContent = message().none; return; }
+      const candidates = result.places.map(place => [
+        place.name,
+        place.estimatedTravelMinutes,
+        place.recommendedStayMinutes,
+        place.confidence,
+        place.openingHours || null
+      ]);
+      const existing = pmCustomCategories.findIndex(category => normalize(category.query) === normalize(raw));
+      const category = {
+        id: `ai-${Date.now()}`,
+        query: raw,
+        understoodAs: result.understoodAs,
+        commonThemes: result.commonThemes,
+        candidates
+      };
+      if (existing >= 0) pmCustomCategories.splice(existing, 1, category);
+      else pmCustomCategories.push(category);
+      output.textContent = `${message().found} ${message().theme}: ${result.commonThemes.join(', ')}. ${result.places.map(place => place.name + (place.openingHours ? ` (${place.openingHours})` : '')).join(', ')}`;
+      input.value = '';
+      redraw();
+    } catch (error) {
+      output.textContent = message().offline;
+    } finally {
+      button.disabled = false;
+    }
+  }
+  button.onclick = analyze;
+  input.onkeydown = event => { if (event.key === 'Enter' && !button.disabled) analyze(); };
+}, 2200));

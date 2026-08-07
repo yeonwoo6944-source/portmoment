@@ -33,18 +33,30 @@ window.addEventListener('load', () => setTimeout(() => {
     ? 'https://portmoment.vercel.app/api/custom-search'
     : '/api/custom-search';
   const clearPlaceTypes = [
-    {pattern:/수영장|실내수영|swimming\s*pool|piscine|schwimmbad|piscina|プール|游泳池|泳池/i,label:'수영장',term:'swimming pool',stay:100},
-    {pattern:/아쿠아리움|수족관|aquarium|水族館|水族馆/i,label:'아쿠아리움',term:'aquarium',stay:90},
-    {pattern:/박물관|museum|musée|museo|博物館|博物馆/i,label:'박물관',term:'museum',stay:90},
-    {pattern:/미술관|art\s*gallery|gallery|galerie|galería|美術館|美术馆/i,label:'미술관',term:'art gallery',stay:90},
-    {pattern:/도서관|library|bibliothèque|bibliothek|biblioteca|図書館|图书馆/i,label:'도서관',term:'library',stay:80},
-    {pattern:/동물원|zoo|動物園|动物园/i,label:'동물원',term:'zoo',stay:120},
-    {pattern:/영화관|cinema|movie\s*theater|kino|cine|映画館|电影院/i,label:'영화관',term:'cinema',stay:140},
-    {pattern:/해수욕장|해변|beach|plage|strand|playa|海水浴場|海滩/i,label:'해수욕장',term:'beach',stay:100}
+    {pattern:/수영장|실내수영|swimming\s*pool|プール/i,aliases:['piscine','piscines','piscine couverte','schwimmbad','schwimmbäder','hallenbad','piscina','piscinas','piscina cubierta','游泳池','游泳馆','游泳館','泳池'],label:'수영장',term:'swimming pool',stay:100},
+    {pattern:/아쿠아리움|수족관|aquarium|アクアリウム/i,aliases:['aquariums','acuario','acuarios','水族馆','水族館','海洋馆','海洋館'],label:'아쿠아리움',term:'aquarium',stay:90},
+    {pattern:/박물관|museum|ミュージアム/i,aliases:['musee','musees','musée','musées','museen','museo','museos','博物馆','博物館'],label:'박물관',term:'museum',stay:90},
+    {pattern:/미술관|art\s*gallery|gallery|美術館/i,aliases:['galerie art','galerie d art','galeries','kunstgalerie','kunstgalerien','galeria de arte','galería de arte','galerias','galerías','美术馆','藝術館','艺术馆'],label:'미술관',term:'art gallery',stay:90},
+    {pattern:/도서관|library|図書館/i,aliases:['libraries','bibliotheque','bibliothèques','bibliothek','bibliotheken','biblioteca','bibliotecas','图书馆','圖書館'],label:'도서관',term:'library',stay:80},
+    {pattern:/동물원|zoo|動物園/i,aliases:['zoos','zoologischer garten','parc zoologique','zoologico','zoológico','动物园','動物園'],label:'동물원',term:'zoo',stay:120},
+    {pattern:/영화관|cinema|movie\s*theater|映画館/i,aliases:['cinemas','cinéma','cinémas','kino','kinos','cine','cines','电影院','電影院','戏院','戲院'],label:'영화관',term:'cinema',stay:140},
+    {pattern:/해수욕장|해변|beach|海水浴場/i,aliases:['plage','plages','strand','strände','playa','playas','海滩','海灘'],label:'해수욕장',term:'beach',stay:100}
   ];
+  const searchLanguage = {ko:'ko',en:'en',ja:'ja',zhCN:'zh-CN',zhTW:'zh-TW',fr:'fr',de:'de',es:'es'};
+  const placeTypeLabels = {
+    '수영장':{ko:'수영장',en:'swimming pool',ja:'プール',zhCN:'游泳池',zhTW:'游泳池',fr:'piscine',de:'Schwimmbad',es:'piscina'},
+    '아쿠아리움':{ko:'아쿠아리움',en:'aquarium',ja:'アクアリウム',zhCN:'水族馆',zhTW:'水族館',fr:'aquarium',de:'Aquarium',es:'acuario'},
+    '박물관':{ko:'박물관',en:'museum',ja:'博物館',zhCN:'博物馆',zhTW:'博物館',fr:'musée',de:'Museum',es:'museo'},
+    '미술관':{ko:'미술관',en:'art gallery',ja:'美術館',zhCN:'美术馆',zhTW:'美術館',fr:'galerie d’art',de:'Kunstgalerie',es:'galería de arte'},
+    '도서관':{ko:'도서관',en:'library',ja:'図書館',zhCN:'图书馆',zhTW:'圖書館',fr:'bibliothèque',de:'Bibliothek',es:'biblioteca'},
+    '동물원':{ko:'동물원',en:'zoo',ja:'動物園',zhCN:'动物园',zhTW:'動物園',fr:'zoo',de:'Zoo',es:'zoológico'},
+    '영화관':{ko:'영화관',en:'cinema',ja:'映画館',zhCN:'电影院',zhTW:'電影院',fr:'cinéma',de:'Kino',es:'cine'},
+    '해수욕장':{ko:'해수욕장',en:'beach',ja:'海水浴場',zhCN:'海滩',zhTW:'海灘',fr:'plage',de:'Strand',es:'playa'}
+  };
+  const intentText = value => value.toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[\p{P}\p{S}\s]/gu,'');
 
   async function findClearPlace(type) {
-    const params = new URLSearchParams({format:'jsonv2',limit:'12',namedetails:'1',addressdetails:'1',extratags:'1','accept-language':lang,q:`${type.term} Busan`});
+    const params = new URLSearchParams({format:'jsonv2',limit:'12',namedetails:'1',addressdetails:'1',extratags:'1','accept-language':searchLanguage[lang]||'en',q:`${type.term} Busan`});
     const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {headers:{Accept:'application/json'}});
     if (!response.ok) return [];
     return (await response.json()).filter(item => +item.lat > 34.8 && +item.lat < 35.5 && +item.lon > 128.7 && +item.lon < 129.4).map((item,index) => ({
@@ -57,21 +69,25 @@ window.addEventListener('load', () => setTimeout(() => {
   }
 
   async function analyze() {
-    const raw = input.value.trim();
-    if (invalid(raw)) { output.textContent = message().bad; return; }
-    output.textContent = message().search;
-    button.disabled = true;
+    const liveButton = $('#analyzeCustom'), liveInput = $('#customCategory'), liveOutput = $('#customResult');
+    if (!liveButton || !liveInput || !liveOutput) return;
+    const raw = liveInput.value.trim();
+    if (invalid(raw)) { liveOutput.textContent = message().bad; return; }
+    liveOutput.textContent = message().search;
+    liveButton.disabled = true;
     try {
-      const clearType = clearPlaceTypes.find(type => type.pattern.test(raw));
+      const foldedInput = intentText(raw);
+      const clearType = clearPlaceTypes.find(type => type.pattern.test(raw) || type.aliases.some(alias => foldedInput.includes(intentText(alias))));
       if (clearType) {
+        const displayLabel = placeTypeLabels[clearType.label]?.[lang] || clearType.label;
         const places = await findClearPlace(clearType);
-        if (!places.length) { output.textContent = message().none; return; }
+        if (!places.length) { liveOutput.textContent = message().none; return; }
         const candidates = places.map(place => [place.name,place.estimatedTravelMinutes,place.recommendedStayMinutes,place.confidence,place.openingHours]);
         const existing = pmCustomCategories.findIndex(category => normalize(category.query) === normalize(raw));
-        const category = {id:`direct-${Date.now()}`,query:raw,understoodAs:clearType.label,commonThemes:[clearType.label],candidates};
+        const category = {id:`direct-${Date.now()}`,query:raw,understoodAs:displayLabel,commonThemes:[displayLabel],candidates};
         if (existing >= 0) pmCustomCategories.splice(existing,1,category); else pmCustomCategories.push(category);
-        output.textContent = `${message().found} ${message().theme}: ${clearType.label}. ${places.map(place => place.name + (place.openingHours ? ` (${place.openingHours})` : '')).join(', ')}`;
-        input.value = ''; redraw(); return;
+        liveOutput.textContent = `${message().found} ${message().theme}: ${displayLabel}. ${places.map(place => place.name + (place.openingHours ? ` (${place.openingHours})` : '')).join(', ')}`;
+        liveInput.value = ''; redraw(); return;
       }
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -80,10 +96,10 @@ window.addEventListener('load', () => setTimeout(() => {
       });
       const result = await response.json();
       if (!response.ok) {
-        output.textContent = result.error === 'invalid_query' ? message().bad : result.error === 'no_places' ? message().none : message().offline;
+        liveOutput.textContent = result.error === 'invalid_query' ? message().bad : result.error === 'no_places' ? message().none : message().offline;
         return;
       }
-      if (!result.places?.length) { output.textContent = message().none; return; }
+      if (!result.places?.length) { liveOutput.textContent = message().none; return; }
       const candidates = result.places.map(place => [
         place.name,
         place.estimatedTravelMinutes,
@@ -101,15 +117,23 @@ window.addEventListener('load', () => setTimeout(() => {
       };
       if (existing >= 0) pmCustomCategories.splice(existing, 1, category);
       else pmCustomCategories.push(category);
-      output.textContent = `${message().found} ${message().theme}: ${result.commonThemes.join(', ')}. ${result.places.map(place => place.name + (place.openingHours ? ` (${place.openingHours})` : '')).join(', ')}`;
-      input.value = '';
+      liveOutput.textContent = `${message().found} ${message().theme}: ${result.commonThemes.join(', ')}. ${result.places.map(place => place.name + (place.openingHours ? ` (${place.openingHours})` : '')).join(', ')}`;
+      liveInput.value = '';
       redraw();
     } catch (error) {
-      output.textContent = message().offline;
+      liveOutput.textContent = message().offline;
     } finally {
-      button.disabled = false;
+      liveButton.disabled = false;
     }
   }
-  button.onclick = analyze;
-  input.onkeydown = event => { if (event.key === 'Enter' && !button.disabled) analyze(); };
+  const bind = () => {
+    const liveButton = $('#analyzeCustom'), liveInput = $('#customCategory');
+    if (!liveButton || !liveInput) return;
+    liveButton.onclick = analyze;
+    liveInput.onkeydown = event => { if (event.key === 'Enter' && !liveButton.disabled) analyze(); };
+  };
+  bind();
+  document.addEventListener('click', event => {
+    if (event.target.closest('.language-option')) setTimeout(bind, 100);
+  });
 }, 2200));
